@@ -1,3 +1,6 @@
+1.0.1 - 16/01/25 - jvandenbroek
+- Also filter https requests when http filter is enabled
+
 1.0.0 - schumi2004,CaTz, Mafarricos
 - Several fixes
 - Clean up
