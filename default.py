@@ -111,7 +111,7 @@ class AutoSubsPlayer(xbmc.Player):
             specific_language = (__addon__.getSetting('selected_language'))
             specific_language = xbmc.convertLanguage(specific_language, xbmc.ISO_639_2)
             try:
-                xbmc.sleep(3000)
+                xbmc.sleep(int(__addon__.getSetting("StartDelay")*1000))
                 if self.getSubtitles():
                     Debug("Subtitles already present '%s'" % self.getSubtitles())
                     self.run = false
