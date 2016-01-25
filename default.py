@@ -54,8 +54,8 @@ def isExcluded(movieFullPath):
         Debug("isExcluded(): Video is playing via Live TV, which is currently set as excluded location.")
         return False
 
-    if (movieFullPath.find("http://") > -1) and getSettingAsBool('ExcludeHTTP'):
-        Debug("isExcluded(): Video is playing via HTTP source, which is currently set as excluded location.")
+    if ((movieFullPath.find("http://") > -1) or (movieFullPath.find("https://") > -1)) and getSettingAsBool('ExcludeHTTP'):
+        Debug("isExcluded(): Video is playing via HTTP(S) source, which is currently set as excluded location.")
         return False
 
     ExcludePath = getSetting('ExcludePath')
@@ -112,7 +112,7 @@ class AutoSubsPlayer(xbmc.Player):
             specific_language = xbmc.convertLanguage(specific_language, xbmc.ISO_639_2)
             try:
                 xbmc.sleep(3000)
-                if self.getSubtitles(): 
+                if self.getSubtitles():
                     Debug("Subtitles already present '%s'" % self.getSubtitles())
                     self.run = false
             except: pass
@@ -124,11 +124,11 @@ class AutoSubsPlayer(xbmc.Player):
                 Debug("availableLangs '%s'" % availableLangs)
                 totalTime = xbmc.Player().getTotalTime()
                 Debug("totalTime '%s'" % totalTime)
-                videoclipAlbum = ''			
+                videoclipAlbum = ''
                 if getSettingAsBool('ExcludeVideoClip'):
                     videoclipAlbum = xbmc.InfoTagMusic.getAlbum()
                     Debug("videoclipAlbum '%s'" % videoclipAlbum)
-                
+
                 if (totalTime > ExcludeTime and (not videoclipAlbum) and ((not xbmc.getCondVisibility("VideoPlayer.HasSubtitles")) or (check_for_specific and not specific_language in availableLangs)) and all(movieFullPath.find (v) <= -1 for v in ignore_words) and (isExcluded(movieFullPath)) ):
                     self.run = False
                     xbmc.sleep(1000)
