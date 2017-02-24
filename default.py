@@ -19,13 +19,13 @@ __resource__ = xbmc.translatePath(os.path.join(__cwd__, 'resources')).decode("ut
 
 __settings__ = xbmcaddon.Addon("service.autosubs")
 
-ignore_words = (__settings__.getSetting('ignore_words').split(','))
+ignore_words = __settings__.getSetting('ignore_words').split(',').decode("utf-8")
 ExcludeTime = int((__settings__.getSetting('ExcludeTime')))*60
 
 sys.path.append(__resource__)
 
 
-def Debug(msg, force = False):
+def Debug(msg, force=False):
     if(debug == "true" or force):
         try:
             print "#####[AutoSubs]##### " + msg
@@ -111,15 +111,16 @@ class AutoSubsPlayer(xbmc.Player):
             specific_language = (__addon__.getSetting('selected_language'))
             specific_language = xbmc.convertLanguage(specific_language, xbmc.ISO_639_2)
             try:
-                xbmc.sleep(int(__addon__.getSetting("StartDelay")*1000))
+                if (monitor.waitForAbort(int(__addon__.getSetting("StartDelay"))))
                 if self.getSubtitles():
                     Debug("Subtitles already present '%s'" % self.getSubtitles())
                     self.run = false
-            except: pass
+            except:
+                pass
             if self.run:
                 movieFullPath = xbmc.Player().getPlayingFile()
                 Debug("movieFullPath '%s'" % movieFullPath)
-                xbmc.sleep(1000)
+                monitor.waitForAbort(1)
                 availableLangs = xbmc.Player().getAvailableSubtitleStreams()
                 Debug("availableLangs '%s'" % availableLangs)
                 totalTime = xbmc.Player().getTotalTime()
@@ -129,21 +130,25 @@ class AutoSubsPlayer(xbmc.Player):
                     videoclipAlbum = xbmc.InfoTagMusic.getAlbum()
                     Debug("videoclipAlbum '%s'" % videoclipAlbum)
 
-                if (totalTime > ExcludeTime and (not videoclipAlbum) and ((not xbmc.getCondVisibility("VideoPlayer.HasSubtitles")) or (check_for_specific and not specific_language in availableLangs)) and all(movieFullPath.find (v) <= -1 for v in ignore_words) and (isExcluded(movieFullPath)) ):
+                if (totalTime > ExcludeTime
+                and (not videoclipAlbum)
+                and (not xbmc.getCondVisibility("VideoPlayer.HasSubtitles") or (check_for_specific and not specific_language in availableLangs))
+                and all(movieFullPath.find (v.strip()) <= -1 for v in ignore_words)
+                and (isExcluded(movieFullPath)) ):
                     self.run = False
-                    xbmc.sleep(1000)
+                    monitor.waitForAbort(1)
                     Debug('Started: AutoSearching for Subs')
                     xbmc.executebuiltin('XBMC.ActivateWindow(SubtitleSearch)')
                 else:
                     Debug('Started: Subs found or Excluded')
+                    xbmc.Player().showSubtitles(True)
                     self.run = False
         else:
             Debug('Started: Not a video file, finishing')
 
 
-player_monitor = AutoSubsPlayer()
+monitor = xbmc.Monitor()
+player = AutoSubsPlayer()
+monitor.waitForAbort()
 
-while not xbmc.abortRequested:
-    xbmc.sleep(1000)
-
-del player_monitor
+del player
